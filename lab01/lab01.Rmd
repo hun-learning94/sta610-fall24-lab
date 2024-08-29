@@ -1,5 +1,6 @@
 ---
-title: "Lab01"
+title: "STA610 Lab01 ANOVA and REANOVA"
+author: Hun Kang
 output: pdf_document
 date: "2024-08-30"
 ---
@@ -8,22 +9,147 @@ date: "2024-08-30"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## 1. ANOVA as a linear regression
+Consider an one-way ANOVA model where an $i$th unit of a $j$th group is modeled as
+$$
+\begin{aligned}
+y_{ij} &= \theta_j + \epsilon_{ij},\quad i\in[n],\;j\in[m]\\
+\theta_j &\stackrel{iid}{\sim} N(0, \sigma^2)
+\end{aligned}
+$$
+Another way to look at this model is as follows. First, we reparameterize the group mean parameters $\theta_j$ as
+$$
+\begin{aligned}
+\theta_j = 
+\begin{cases}
+\alpha\quad &j=1\\
+\alpha + \beta_{j-1}&j\geq 2
+\end{cases}
+\end{aligned}
+$$
+Then you can check that the above model can be written as 
+$$
+\boldsymbol{y} = \alpha 1_{mn} + \boldsymbol{X}\boldsymbol\beta + \boldsymbol{\epsilon}
+$$
+where $1_{mn}$ is a vector of $1$ of length $mn$, $\boldsymbol{y} = [y_{11}, \cdots, y_{nm}]^T$, similarly for $\boldsymbol{\epsilon}$ and $\boldsymbol\beta = [\beta_1, \cdots,\beta_{m-1}]^T$.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
+\begin{quote}
+    \textbf{Q: Write down the form of a design matrix $\boldsymbol{X}$.} 
+\end{quote}
+
+The hypothesis of testing no difference in group means can be written as
+$$
+H_0: \theta_1=\cdots=\theta_p \quad \text{vs} \quad H_1:\theta_{i}\neq\theta_j \;\;^\exists(i,j)
+$$
+\begin{quote}
+    \textbf{Q: Re-express the above $H_0$ using $\beta$.} 
+\end{quote}
+
+This tells us that ANOVA can be seen as a linear regression, and its hypothesis testing is equivalent to testing a submodel of linear regression. We do not proceed from here, but the general idea is as follows. Note that we wrote ANOVA decomposition as $SST = SSA + SSW$ where
+
+$$
+\begin{aligned}
+SST &= \sum_{j=1}^m\sum_{i=1}^n \left(y_{ij}-\bar{y}\right)^2\\
+SSA &= \sum_{j=1}^m\sum_{i=1}^n \left(\bar{y}_{j}-\bar{y}\right)^2\\
+SSW &= \sum_{j=1}^m\sum_{i=1}^n \left(y_{ij}-\bar{y}_j\right)^2\\
+\end{aligned}
+$$
+For a matrix $X$, we write $c(X)$ the vector space its columns expand, i.e., column space. Also, we write $P_{X}$ an orthogonal projection matrix onto $c(X)$. For convenience, let $Z=cbind(1_{mn}, X)$. The dimension of $c(Z)$ is $m$.
+
+\begin{enumerate}
+  \item One can see that $SST = \|(I - P_{1})y\|^2 = y^T(I - P_{1})y$, $SSA = y^T(P_{Z} - P_{1})y$ and $SSE = y^T(I - P_{Z})y$.
+  \item $(I - P_{1})y$ is a vector $y$ projected onto the column space orthogonal to $c(1_{mn})$, whose dimension is $mn-1$. 
+  \item $(I - P_{Z})y$ is a vector $y$ projected onto the column space orthogonal to $c(Z)$, whose dimension is $mn-m = m(n-1)$.
+  \item $(P_{Z} - P_{1})y$ is a vector $y$ projected onto the subspace of $c(Z)$ that are orthogonal to $c(1_{mn})$, whose dimension is $m-1$
+\end{enumerate}
+
+Using these, the F-statistics of testing $H_0$ is 
+$$
+F(y) = \frac{SSA / (m-1)}{SSW / m(n-1)}
+$$
+
+Note that $SSA = y^T(P_{Z} - P_{1})y = y^T(I - P_{1})y - y^T(I - P_{Z})y$. A different interpretation of $y^T(I - P_{Z})y$ is to see it as a residual sum of squares of a model with a design matrix $Z$. In this aspect, large $SSA$ means that by including $X$, we see a large decrease in the residuals, i.e., the full model with $Z$ fits the data better than the intercept only model.
+
+
+```{r message=F}
+library(tidyverse)
+URL <- "https://campus.murraystate.edu/academic/faculty/cmecklin/STA565/wheat.txt"
+wheat <- read.table(URL,header=TRUE)
+```
+```{r}
+str(wheat)
+```
+```{r}
+lm1 = lm(yield ~ 1, data = wheat)
+lm2 = lm(yield ~ 1 + as.factor(location), data = wheat)
+anova(lm1, lm2)
 ```
 
-## Including Plots
+\begin{quote}
+    \textbf{Q: Perfom f-test of treatment effect as learned in the class and check that the test statistics is the same.} 
+\end{quote}
 
-You can also embed plots, for example:
+\newpage
+## 2. REANOVA and covariance structure
+Consider a REANOVA model
+$$
+\begin{aligned}
+y_{ij} &= \mu + a_j + \epsilon_{ij},\quad i\in[n_j],\;j\in[m]\; (n_j =n\;^\forall j)\\
+a_j &\stackrel{iid}{\sim} N(0,\tau^2) \\
+\epsilon_{ij} &\stackrel{iid}{\sim} N(0,\sigma^2),\quad E[a_j \epsilon_{ij}]=0
+\end{aligned}
+$$
+where $\mu$, $\sigma^2$ and $\tau^2$ are some unknown fixed parameter.
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
+In the class, we saw that $E(y_{ij})=\mu$, $V(y_{ij}) = \sigma^2+\tau^2$ and $Cov(y_{1j},y_{2j})=\tau^2$. Also, since $y_{ij}$ is a sum of Gausssian random variables, it itself also follows normal distribution. From this, we can write a joint distribution of $\boldsymbol{y}_j=[y_{1j}, \cdots, y_{nj}]^T$ for a group $j$ as
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+$$
+\begin{aligned}
+\boldsymbol{y}_j &\sim N(\mu 1_n, \Sigma_j)
+\end{aligned}
+$$
+
+\begin{quote}
+    \textbf{Q: Write down the covariance matrix $\Sigma_j$ as follows:}
+$$
+(\Sigma_j)_{kl}=
+\begin{cases}
+?\quad(k=l)\\
+?\quad(k\neq l)
+\end{cases}
+$$
+\end{quote}
+
+Combining all $\boldsymbol{y}_j$, we can rewrite the above REANOVA model in a matrix-vector form as 
+$$
+\begin{aligned}
+\boldsymbol{y} &\sim N(\mu 1_{mn}, \Sigma)
+\end{aligned}
+$$
+
+\begin{quote}
+    \textbf{Q: What is $Cov(y_{i1},y_{i2})$? Using this, how can we write $\Sigma$?}
+\end{quote}
+
+In contrast, if we change the model as 
+$$
+\begin{aligned}
+y_{ij} &= \mu + \alpha_j + \epsilon_{ij},\quad i\in[n_j],\;j\in[m]\; (n_j =n\;^\forall j)\\
+\epsilon_{ij} &\stackrel{iid}{\sim} N(0,\sigma^2)
+\end{aligned}
+$$
+where $\alpha_j$ is also some unknown fixed parameter, then we have
+
+$$
+\begin{aligned}
+\boldsymbol{y}_j &\sim N\left((\mu+\alpha_j) 1_n, \sigma^2I_n\right)
+\end{aligned}
+$$
+
+\begin{quote}
+    \textbf{Q: Write down the joint model for $\boldsymbol{y}$}
+\end{quote}
+
+The key takeaway is that, by adding another source of randomness $a_j$ for group-wise variation, marginally we are modelling the covariance structure of $\boldsymbol{y}$ as $\Sigma$.
