@@ -36,7 +36,7 @@ where $1_{mn}$ is a vector of $1$ of length $mn$, $\boldsymbol{y} = [y_{11}, \cd
 
 
 \begin{quote}
-    \textbf{Q: Write down the form of a design matrix $\boldsymbol{X}$.} 
+    \textbf{Q1-1: Write down the form of a design matrix $\boldsymbol{X}$.} 
 \end{quote}
 
 The hypothesis of testing no difference in group means can be written as
@@ -44,7 +44,7 @@ $$
 H_0: \theta_1=\cdots=\theta_p \quad \text{vs} \quad H_1:\theta_{i}\neq\theta_j \;\;^\exists(i,j)
 $$
 \begin{quote}
-    \textbf{Q: Re-express the above $H_0$ using $\beta$.} 
+    \textbf{Q1-2: Re-express the above $H_0$ using $\beta$.} 
 \end{quote}
 
 This tells us that ANOVA can be seen as a linear regression, and its hypothesis testing is equivalent to testing a submodel of linear regression. We do not proceed from here, but the general idea is as follows. Note that we wrote ANOVA decomposition as $SST = SSA + SSW$ where
@@ -88,7 +88,7 @@ anova(lm1, lm2)
 ```
 
 \begin{quote}
-    \textbf{Q: Perfom f-test of treatment effect as learned in the class and check that the test statistics is the same.} 
+    \textbf{Q1-3: Perfom f-test of treatment effect as learned in the class and check that the test statistics is the same.} 
 \end{quote}
 
 \newpage
@@ -112,7 +112,7 @@ $$
 $$
 
 \begin{quote}
-    \textbf{Q: Write down the covariance matrix $\Sigma_j$ as follows:}
+    \textbf{Q2-1: Write down the covariance matrix $\Sigma_j$ as follows:}
 $$
 (\Sigma_j)_{kl}=
 \begin{cases}
@@ -130,7 +130,7 @@ $$
 $$
 
 \begin{quote}
-    \textbf{Q: What is $Cov(y_{i1},y_{i2})$? Using this, how can we write $\Sigma$?}
+    \textbf{Q2-2: What is $Cov(y_{i1},y_{i2})$? Using this, how can we write $\Sigma$?}
 \end{quote}
 
 In contrast, if we change the model as 
@@ -149,7 +149,7 @@ $$
 $$
 
 \begin{quote}
-    \textbf{Q: Write down the joint model for $\boldsymbol{y}$}
+    \textbf{Q2-3: Write down the joint model for $\boldsymbol{y}$}
 \end{quote}
 
 The key takeaway is that, by adding another source of randomness $a_j$ for group-wise variation, marginally we are modelling the covariance structure of $\boldsymbol{y}$ as $\Sigma$.
