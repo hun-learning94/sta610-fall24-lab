@@ -19,8 +19,8 @@ knitr::opts_chunk$set(echo = TRUE)
 Consider an one-way ANOVA model where an $i$th unit of a $j$th group is modeled as
 $$
 \begin{aligned}
-y_{ij} &= \theta_j + \epsilon_{ij},\quad i\in[n],\;j\in[m]\\
-\theta_j &\stackrel{iid}{\sim} N(0, \sigma^2)
+y_{ij} &= \theta_j + \epsilon_{ij},\quad i\in[n_j],\;j\in[m]\; (n_j =n\;^\forall j)\\
+\epsilon_{ij} &\stackrel{iid}{\sim} N(0, \sigma^2)
 \end{aligned}
 $$
 Another way to look at this model is as follows. First, we reparameterize the group mean parameters $\theta_j$ as
