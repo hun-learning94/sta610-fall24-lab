@@ -9,6 +9,11 @@ date: "2024-08-30"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+\begin{itemize}
+\item Write down your answers in any blank sheet and submit your work in paper during the lab.
+\item Your work will not be graded. As long as you submit, you will get a full credit. 
+\item For those who missed the lab today, you can submit it via email to me for half credit.
+\end{itemize}
 
 ## 1. ANOVA as a linear regression
 Consider an one-way ANOVA model where an $i$th unit of a $j$th group is modeled as
@@ -59,7 +64,7 @@ $$
 For a matrix $X$, we write $c(X)$ the vector space its columns expand, i.e., column space. Also, we write $P_{X}$ an orthogonal projection matrix onto $c(X)$. For convenience, let $Z=cbind(1_{mn}, X)$. The dimension of $c(Z)$ is $m$.
 
 \begin{enumerate}
-  \item One can see that $SST = \|(I - P_{1})y\|^2 = y^T(I - P_{1})y$, $SSA = y^T(P_{Z} - P_{1})y$ and $SSE = y^T(I - P_{Z})y$.
+  \item One can see that $SST = \|(I - P_{1})y\|^2 = y^T(I - P_{1})y$, $SSA = y^T(P_{Z} - P_{1})y$ and $SSW = y^T(I - P_{Z})y$.
   \item $(I - P_{1})y$ is a vector $y$ projected onto the column space orthogonal to $c(1_{mn})$, whose dimension is $mn-1$. 
   \item $(I - P_{Z})y$ is a vector $y$ projected onto the column space orthogonal to $c(Z)$, whose dimension is $mn-m = m(n-1)$.
   \item $(P_{Z} - P_{1})y$ is a vector $y$ projected onto the subspace of $c(Z)$ that are orthogonal to $c(1_{mn})$, whose dimension is $m-1$
@@ -88,7 +93,7 @@ anova(lm1, lm2)
 ```
 
 \begin{quote}
-    \textbf{Q1-3: Perfom f-test of treatment effect as learned in the class and check that the test statistics is the same.} 
+    \textbf{Q1-3: Conduct the f-test of treatment effect as learned in the class and check that the test statistics is the same.} 
 \end{quote}
 
 \newpage
