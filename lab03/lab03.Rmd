@@ -56,8 +56,8 @@ gdotplot<-function(y,g,xlab="group",ylab="response",mcol="blue",
     yj<-y[g==j]
     rj<-rg[ match(as.character(j),names(rg)) ]
     nj<-length(yj)
-    segments( rep(rj,nj) ,max(yj),rep(rj,nj),min(yj),col="gray")
-    points( rep(rj,nj), yj,col=ocol,...)
+    segments(rj ,max(yj),rj,min(yj),col="gray")
+    points( rep(rj,nj), yj,col=ocol, ...)
     points(rj,mean(yj),pch=16,cex=1.5,col=mcol)
   }
 }
