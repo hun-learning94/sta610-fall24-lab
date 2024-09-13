@@ -1,0 +1,16 @@
+---
+title: "STA610 Lab03"
+author: Hun Kang
+output: pdf_document
+date: "2024-09-13"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\begin{itemize}
+\item Write down your answers in any blank sheet and submit your work in paper during the lab.
+\item Your work will not be graded. As long as you submit, you will get a full credit. 
+\item For those who missed the lab today, you can submit it via email to me for half credit.
+\end{itemize}
