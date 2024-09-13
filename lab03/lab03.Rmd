@@ -14,3 +14,125 @@ knitr::opts_chunk$set(echo = TRUE)
 \item Your work will not be graded. As long as you submit, you will get a full credit. 
 \item For those who missed the lab today, you can submit it via email to me for half credit.
 \end{itemize}
+
+## Least Squares Review
+How can we find $c$ such that
+$$
+\arg\min_{c\in \mathbb{R}}\sum_{i=1}^n (x_i - c)^2
+$$
+One way is to start from
+$$
+\sum_{i=1}^n(x_i - c)^2 = \sum_{i=1}^n(x_i - \bar{x} + \bar{x}- c)^2
+$$
+Another approach is to use calculus
+$$
+\frac{d}{dc}\sum_{i=1}^n (x_i - c)^2 = 0
+$$
+
+\begin{quote}
+    \textbf{Q1-1: Compute $c$ using both approaches.} 
+\end{quote}
+
+## Confidence Interval for Group Effects
+
+```{r}
+radon<-readRDS(url("https://www2.stat.duke.edu/~pdh10/Teaching/610/Code/radonMN.rds"))  
+head(radon)
+```
+
+
+The following is the code to produce the first plot of the lecture slide s5GroupEstNP. We will modify this code to plot various confidence intervals of the group means.
+```{r}
+gdotplot<-function(y,g,xlab="group",ylab="response",mcol="blue",
+                   ocol="lightblue",sortgroups=TRUE,...)
+{
+  m<-length(unique(g)) 
+  rg<-rank( tapply(y,g,mean),ties.method="first")  
+  if(sortgroups==FALSE){ rg<-1:m ; names(rg)<-unique(g)} 
+  plot(c(1,m),range(y),type="n",xlab=xlab,ylab=ylab)
+
+  for(j in unique(g))
+  {
+    yj<-y[g==j]
+    rj<-rg[ match(as.character(j),names(rg)) ]
+    nj<-length(yj)
+    segments( rep(rj,nj) ,max(yj),rep(rj,nj),min(yj),col="gray")
+    points( rep(rj,nj), yj,col=ocol,...)
+    points(rj,mean(yj),pch=16,cex=1.5,col=mcol)
+  }
+}
+
+par(mar=c(3,3,1,1), mgp=c(1.75,.75,0)) 
+gdotplot(log(radon$radon),
+         radon$county,
+         xlab="county", ylab="log radon")
+```
+
+\begin{quote}
+    \textbf{Q2-1: Identify the code lines that 1) compute the mean of each group, 2) order the counties, 3) plot data points, 4) plot vertical lines.} 
+\end{quote}
+\begin{quote}
+    \textbf{Q2-2: Modify the plot so that counties are sorted according to the number of observations within county and draw a horizontal line marking the grand mean.} 
+\end{quote}
+
+We first use ANOVA to evaluate statistical evidence of heterogeneity in across-county means.
+
+```{r}
+anova(lm(log(radon) ~ county, data = radon))
+```
+
+Now we fit the hierarchical normal model to the data. Descriptions about the package with many useful examples can be found in \url{https://www.jstatsoft.org/article/view/v067i01}.
+
+```{r, message=F}
+library(lme4)
+```
+
+\begin{quote}
+    \textbf{Q2-3: Write down the model in the following code and identify the parameters and the random variables with corresponding distribution.} 
+\end{quote}
+```{r}
+mod <- lmer(log(radon) ~ 1 + (1 | county), data = radon, REML = FALSE)
+summary(mod)
+```
+
+We can extract the estimates of $\mu$, $\tau$ and $\sigma$ as below. Here, the estimate of $\sigma$ is a pooled estimate.
+```{r}
+fixef(mod)
+data.frame(VarCorr(mod))
+```
+
+There are two different types of confidence interval we learned in class. One is the t-interval for group mean with pooled variance estimate:
+$$
+\bar{y}_j \pm 
+\frac{t_{1-\alpha/2}}{\sqrt{n_j/\hat\sigma^2 }}
+$$
+and the other is the Empirical Bayes interval
+$$
+\left(\frac{\hat\tau^2}{\hat\tau^2 + \hat\sigma^2/n_j} \hat\mu + \frac{\hat\sigma^2/n_j}{\hat\tau^2 + \hat\sigma^2/n_j} \bar{y}_j  \right)
+\pm 
+\frac{t_{1-\alpha/2}}{\sqrt{n_j/\hat\sigma^2 + 1/\tau^2}}
+$$
+
+\begin{quote}
+    \textbf{Q2-4: Describe the differences between two intervals.} 
+\end{quote}
+
+```{r}
+# pooled estimates
+muhat = fixef(mod)
+sighat = data.frame(VarCorr(mod))$sdcor[1]
+tauhat = data.frame(VarCorr(mod))$sdcor[2]
+
+# group-wise statistics
+ybars = aggregate(log(radon) ~ county, data = radon, mean)[,2]
+njs = aggregate(log(radon) ~ county, data = radon, length)[,2]
+```
+
+
+\begin{quote}
+    \textbf{Q2-5: Plot two credible intervals for each group using the code above.} 
+\end{quote}
+
+
+
+
