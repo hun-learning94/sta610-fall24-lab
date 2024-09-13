@@ -9,53 +9,6 @@ date: "2024-08-30"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-<<<<<<< HEAD
-## ANOVA as a linear regression
-Consider an one-way ANOVA model where an $i$th unit of a $j$th group is modeled as
-$$
-\begin{aligned}
-y_{ij} &= \theta_j + \epsilon_{ij},\quad i\in[n],\;j\in[m]\\
-\theta_j &\stackrel{iid}{\sim} N(0, \sigma^2)
-\end{aligned}
-$$
-Another way to look at this model is as follows. First, we reparameterize the group mean parameters $\theta_j$ as
-$$
-\begin{aligned}
-\theta_j = 
-\begin{cases}
-\alpha\quad &j=1\\
-\alpha + \beta_{j-1}&j\geq 2
-\end{cases}
-\end{aligned}
-$$
-Then you can check that the above model can be written as 
-$$
-\mathbb{y} = \alpha 1_{mn} + \mathbb{X}\beta + \mathbb{\epsilon}
-$$
-where $\mathbb{y} = [y_{11}, \cdots, y_{nm}]^T$, similary for $\mathbb{\epsilon}$ and $\beta = [\beta_1, \cdots,\beta_{m-1}]^T$.
-
-#### Write down a form of a matrix $\mathbb{X}$. 
-
-## ANOVA hypothesis testing and confidence interval
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
 \begin{itemize}
 \item Write down your answers in any blank sheet and submit your work in paper during the lab.
 \item Your work will not be graded. As long as you submit, you will get a full credit. 
@@ -205,4 +158,3 @@ $$
 \end{quote}
 
 The key takeaway is that, by adding another source of randomness $a_j$ for group-wise variation, marginally we are modelling the covariance structure of $\boldsymbol{y}$ as $\Sigma$.
->>>>>>> 80efa76a147030b727dd46ab250c69d15f415e32
