@@ -1,0 +1,126 @@
+---
+title: "STA610 Lab02"
+author: ""
+date: "2024-09-06"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Review of Expectation, Variance, and Covariance
+
+
+Recall for random variables $X, Y$ and constant $c$, we have
+$$
+E[X + Y] = E[X] + E[Y]
+,\quad
+E[c X] = c E[X]
+,
+$$
+and
+$$
+Var[X + Y] = Var[X] + 2Cov(X, Y) + Var[Y]
+,\quad
+Var[cX] = c Var[X]
+.
+$$
+
+Now let $X_1, \ldots, X_n$ and $Y_1, \ldots, Y_m$ be random variables.
+Let $c_0, c_1, \ldots, c_n$ and $a_1, \ldots, a_m$ be constants.
+Try simplifying the following:
+\begin{enumerate}
+\item
+$E[c_0 + \sum_{i = 1}^n c_i X_i]$;
+\item
+$Var[c_0 + \sum_{i = 1}^n c_i X_i]$;
+\item
+$Cov(c_0 + \sum_{i = 1}^n c_i X_i, \sum_{j = 1}^m a_j Y_j)$.
+\end{enumerate}
+
+What if each pair of $X_i$ and $X_j$ are independent?
+
+What if each pair of $X_i$ and $Y_j$ are independent?
+
+Further thoughts - what if $X_i, Y_j$ are random vectors and $c_i, a_j$ are constant vectors?
+
+
+
+
+
+# Some Comments from Office Hours on HW1 Q1a
+
+If random variables $Y_1 \sim N(\mu_1, \sigma_1^2), \ldots, Y_n \sim N(\mu_n, \sigma_n^2)$ are independent, why does $\sum_{i = 1}^n Y_i$ also follow a normal distribution?
+
+Note: **Not** because of central limit theorem.
+
+
+
+
+
+# Using lme4 Package
+
+Install and load the package
+```{r,message = F}
+# Install lme4 package if you haven't already
+if (!require(lme4)){
+  install.packages("lme4")
+  # Load the lme4 package
+  library(lme4)
+}
+```
+
+Load the dataset *wheat*
+```{r, message = F}
+library(tidyverse)
+URL <- "https://campus.murraystate.edu/academic/faculty/cmecklin/STA565/wheat.txt"
+wheat <- read.table(URL,header=TRUE)
+```
+```{r}
+str(wheat)
+```
+
+Fit a one-way ANOVA using lme4
+```{r}
+model <- lmer(yield ~ 1 + (1 | location), data = wheat, REML = FALSE)
+summary(model)
+```
+
+Get confidence intervals:
+```{r}
+confint(model)
+```
+
+How to deal with this S4 class:
+```{r}
+# Check the class of the fitted model
+class(model)
+
+# Explore the structure of the object
+str(model)
+```
+
+```{r}
+# Access the slots of the S4 object
+slotNames(model)
+
+# Example: Access fixed effects estimates using the @ operator
+model@beta
+
+# Example: Access random effects variance-covariance estimates
+model@theta
+```
+
+
+Now try again with *variety* being the group.
+What is the fixed effect?
+What is the random effect variance?
+And what are their 95% confidence intervals?
+
+
+
