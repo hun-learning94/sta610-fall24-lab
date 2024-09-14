@@ -22,23 +22,23 @@ $$
 It is straightforward to verify that $V(y_{ij})=\sigma^2+\tau^2$, $V(\bar{y}_j)=\sigma^2/n+\tau^2$, and $V(\bar{y})=\sigma^2/(nm) + \tau^2/m$.
 Since $\bar{y} \sim N(\mu,\sigma^2/(nm) + \tau^2/m)$, the width of the interval is
 $$
-2\times SD(\bar{y}) = 2\sqrt{\sigma^2/(nm) + \tau^2/m}
+4\times SD(\bar{y}) = 4\sqrt{\sigma^2/(nm) + \tau^2/m}
 $$
 
 ### b.
 $$
-2\sqrt{\sigma^2/(nm) + \tau^2/m} < 1/2
+4\sqrt{\sigma^2/(nm) + \tau^2/m} < 1/2
 $$
 after rearranging, it becomes
 $$
-m > 16(\sigma^2/n + \tau^2)
+m > 64(\sigma^2/n + \tau^2)
 $$
 
 ### c.
 The lower bound of $m$ is more affected by $\tau^2$ than $\sigma^2$: more samples are needed for each group for larger $\tau^2$.
 ```{r}
 lb = function(n, sig2, tau2){
-  16*(sig2/n + tau2)
+  64*(sig2/n + tau2)
 }
 n = 1:1e2
 params = list(
@@ -57,7 +57,7 @@ par(mfrow=c(3,3))
 par(mar=c(2.5, 2.5, 1.5, 0.5), mgp=c(1.5,0.5,0), oma = c(0,0,0,0))
 for(i in seq_along(params)){
   param = params[[i]]
-  plot(n, lb(n, param[1], param[2]), type="l", ylim = c(25,100),
+  plot(n, lb(n, param[1], param[2]), type="l", ylim = c(100,500),
        xlab = "n", ylab = "m lower bound",
        main = paste0("sig2 = ", param[1], ", tau2 = ",param[2]))
 }
