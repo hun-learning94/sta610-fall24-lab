@@ -120,8 +120,8 @@ $$
 ```{r}
 # pooled estimates
 muhat = fixef(mod)
-sighat = data.frame(VarCorr(mod))$sdcor[1]
-tauhat = data.frame(VarCorr(mod))$sdcor[2]
+sighat = data.frame(VarCorr(mod))$sdcor[2]
+tauhat = data.frame(VarCorr(mod))$sdcor[1]
 
 # group-wise statistics
 ybars = aggregate(log(radon) ~ county, data = radon, mean)[,2]
