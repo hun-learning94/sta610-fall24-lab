@@ -1,0 +1,156 @@
+---
+title: "STA610 Lab04"
+author: "Yuren Zhou"
+date: "2024-09-20"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\begin{itemize}
+\item
+Write down your answers in any blank sheet and submit your work in paper during the lab.
+\item
+Your work will not be graded. As long as you submit, you will get a full credit.
+\item
+For those who missed the lab today, you can submit it via email to me for half credit.
+\end{itemize}
+
+
+
+
+
+# One-way ANOVA
+
+Load the package.
+```{r}
+library(lme4)
+```
+
+Generate data in case \url{www2.stat.duke.edu} is still down.
+```{r}
+# Set seed for reproducibility
+set.seed(0)
+
+# Number of groups and observations per group
+n_groups <- 4
+n_obs_per_group <- 10
+
+# Create a group factor
+group <- factor(rep(1:n_groups, each = n_obs_per_group))
+
+# Define group means
+group_means <- c(5, 10, 15, 20)
+
+# Generate the response variable (Y) with random noise
+y <- rep(group_means, each = n_obs_per_group) + rnorm(n_groups * n_obs_per_group, mean=0, sd = 2)
+
+# Combine into a data frame
+data_anova <- data.frame(group, y)
+
+# Take a look at the data
+head(data_anova)
+```
+
+Fit a one-way ANOVA model using *lme4*.
+
+```{r}
+# Fit the model using lme4
+anova_model <- lmer(y ~ 1 + (1 | group), data = data_anova, REML = FALSE)
+
+# Summarize the model
+summary(anova_model)
+```
+
+Get confidence intervals using *confint*.
+
+```{r}
+# Get confidence intervals for both fixed and random effects
+confint(anova_model)
+
+# If you only want confidence intervals for the intercept
+confint(anova_model, parm = "beta_")
+
+# If you only want confidence intervals for the standard deviations
+confint(anova_model, parm = "theta_")
+```
+
+Extract random effect modes using *ranef*.
+
+```{r}
+# Extract random effect modes
+random_effects <- ranef(anova_model)
+
+# View random effect modes for each group
+random_effects$group
+```
+
+What are the obtained estimates for the effect of each group (fixed effect intercept $+$ random effect mode)?
+
+How do they compare to the sample means of each group?
+
+How do they compare to the population means of each group $(5, 10, 15, 20)$?
+
+
+
+
+# Linear Models with Interactions (Linear Fixed Effects Models)
+
+Let $y = (y_1, \ldots, y_n)$ be the response variable, $x = (x_1, \ldots, x_n)$ be a continuous covariate, and $z = (z_1, \ldots, z_n)$ be a categorical covariate.
+Say each $i$ corresponds to a student, $x$ corresponds to household income, $z$ corresponds to school, and $y$ corresponds to test score.
+How to interpret the differences between the following linear models?
+\begin{enumerate}
+\item
+$y_i = \beta_0 + \beta_1 x_i + \epsilon_i$;
+\item
+$y_i = (\beta_0 + a_{0, z_i}) + \beta_1 x_i + \epsilon_i$;
+\item
+$y_i = \beta_0 + (\beta_1 + a_{1, z_i}) x_i + \epsilon_i$;
+\item
+$y_i = (\beta_0 + a_{0, z_i}) + (\beta_1 + a_{1, z_i}) x_i + \epsilon_i$.
+\end{enumerate}
+
+We simulate some data in the following.
+```{r}
+# Set seed for reproducibility
+set.seed(0)
+
+# Define the number of levels for the categorical variable z
+n_levels <- 3  # For example, three groups in z
+n_obs_per_level <- 50  # Number of observations per level of z
+
+# Create a categorical variable z with three levels
+z <- factor(rep(1:n_levels, each = n_obs_per_level), labels = c("Group1", "Group2", "Group3"))
+
+# Generate a continuous variable x (randomly sampled from a normal distribution)
+x <- rnorm(n_levels * n_obs_per_level, mean = 50, sd = 10)
+
+# Define interaction terms (different slopes for each group)
+beta_0 <- c(5, 7, 9)  # Different intercepts for each group
+beta_x <- c(1, 1, 1)  # Different slopes for x in each group
+
+# Generate the response variable y with interaction effects
+y <- numeric(length(x))
+for (i in 1:n_levels) {
+  group_idx <- which(z == levels(z)[i])
+  y[group_idx] <- beta_0[i] + beta_x[i] * x[group_idx] + rnorm(length(group_idx), sd = 2)
+}
+
+# Combine into a data frame
+data <- data.frame(x, z, y)
+
+# Take a look at the data
+head(data)
+```
+
+Fit all four linear models above to the simulated data.
+What is the R-square of each model?
+
+Select the best model using information criteria (e.g. AIC/BIC) or any other approach you find appropriate (e.g. F-tests).
+Which model have you selected?
+
