@@ -1,0 +1,144 @@
+---
+title: "Q2"
+author: "Hun Kang"
+date: "2024-09-16"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Q2.
+```{r}
+dat = readRDS(url("https://www2.stat.duke.edu/~pdh10/Teaching/610/Homework/btrips2015-7-1-4.rds"))
+dat$station = as.factor(dat$station)
+str(dat)
+```
+```{r}
+gdotplot<-function(y,g,xlab="group",ylab="response",mcol="blue",
+                   ocol="lightblue",sortgroups=TRUE,...)
+{
+  m<-length(unique(g)) 
+  rg<-rank( tapply(y,g,mean),ties.method="first")  
+  if(sortgroups==FALSE){ rg<-1:m ; names(rg)<-unique(g)} 
+  plot(c(1,m),range(y),type="n",xlab=xlab,ylab=ylab)
+
+  for(j in unique(g))
+  {
+    yj<-y[g==j]
+    rj<-rg[ match(as.character(j),names(rg)) ]
+    nj<-length(yj)
+    segments(rj ,max(yj),rj,min(yj),col="gray")
+    points( rep(rj,nj), yj,col=ocol, ...)
+    points(rj,mean(yj),pch=16,cex=1.5,col=mcol)
+  }
+}
+
+par(mar=c(3,3,1,1), mgp=c(1.75,.75,0)) 
+gdotplot(log(dat$duration),
+         dat$station,
+         xlab="station", ylab="duration")
+```
+
+
+### a.
+```{r}
+anova(lm(log(duration) ~ station, data = dat))
+```
+### b.
+```{r}
+njs = aggregate(log(duration) ~ station, data = dat, length)[,2]
+yjbars = aggregate(log(duration) ~ station, data = dat, mean)[,2]
+par(mar=c(3,3,1,1), mgp=c(1.75,.75,0)) 
+plot(njs, yjbars, xlab= "sample size", ylab= "log duration")
+abline(h = mean(log(dat$duration)), lty=2)
+```
+
+### c. 
+```{r, message=F}
+library(lme4)
+```
+```{r}
+mod <- lmer(log(duration) ~ 1 + (1 | station), data = dat, REML = FALSE)
+summary(mod)
+```
+
+We can extract the estimates of $\mu$, $\tau$ and $\sigma$ as below. Here, the estimate of $\sigma$ is a pooled estimate.
+```{r}
+fixef(mod)
+data.frame(VarCorr(mod))
+```
+
+### d.
+$$
+\hat\theta_j = \frac{n_j/\hat\sigma^2}{n_j/\hat\sigma^2 + 1/\hat\tau^2} \bar{y}_j +
+\frac{1/\hat\tau^2}{n_j/\hat\sigma^2 + 1/\tau^2} \hat\mu
+$$
+
+
+```{r}
+muhat = fixef(mod)
+sig2hat = data.frame(VarCorr(mod))$vcov[2]
+tau2hat = data.frame(VarCorr(mod))$vcov[1]
+thetahat = function(yjbars, njs, muhat, sig2hat,tau2hat){
+  w = (njs/sig2hat) / (njs/sig2hat + 1/tau2hat)
+  w * yjbars + (1-w) * muhat 
+}
+thetahats = thetahat(yjbars, njs, muhat, sig2hat, tau2hat)
+plot(yjbars, thetahats, xlab = "sample mean", ylab = "EB")
+abline(a=0,b=1)
+```
+
+### e.
+$$
+\bar{y}_j \pm 
+\frac{t_{n_j-1, 1-\alpha/2}}{\sqrt{n_j/\hat\sigma^2 }}
+$$
+
+```{r, message=F}
+library(tidyverse)
+```
+
+```{r}
+yjbars_ci = aggregate(log(duration) ~ station, data = dat, mean)
+yjbars_ci$nj = njs
+yjbars_ci = yjbars_ci %>% 
+  mutate(lb = `log(duration)` - qt(1-0.025, nj-1)* sqrt(sig2hat/nj),
+         ub = `log(duration)` + qt(1-0.025, nj-1)* sqrt(sig2hat/nj)) %>% 
+  arrange(`log(duration)`)
+head(yjbars_ci)
+```
+
+```{r}
+plot(1:nrow(yjbars_ci), yjbars_ci$`log(duration)`,
+     ylim = range(yjbars_ci[, c("lb", "ub")]),
+     xaxt = "n",
+     xlab = "station", ylab = "mean log(duration)",
+     main = "95% CI (t-interval)")
+idx = seq(1, nrow(yjbars_ci), by=2)
+axis(1, at = (1:nrow(yjbars_ci)), labels=F)
+text(cex=0.8, x=(1:nrow(yjbars_ci))[idx]-1, y=0.5, yjbars_ci$station[idx], xpd=TRUE, srt=45)
+arrows(1:nrow(yjbars_ci), yjbars_ci$lb,
+         1:nrow(yjbars_ci), yjbars_ci$ub,
+       code=3, angle=90, length=0.03)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
