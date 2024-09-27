@@ -1,0 +1,168 @@
+---
+title: "STA610 Lab05"
+author: Hun Kang
+output: pdf_document
+date: "2024-09-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\begin{itemize}
+\item Write down your answers in any blank sheet and submit your work in paper during the lab.
+\item Your work will not be graded. As long as you submit, you will get a full credit. 
+\item For those who missed the lab today, you can submit it via email to me for half credit.
+\end{itemize}
+
+## Random vector and matrix
+A random vector is a stack of random variables $X_1, \cdots, X_n$ put together in a vector
+$$
+X = \begin{bmatrix}
+X_1 \\ X_2 \\ \vdots \\ X_n
+\end{bmatrix}
+$$
+
+whose distribution is specified by a joint cdf 
+$$
+\begin{aligned}
+F(X) &= F_{X_1,\cdots,X_n}(x_1, \cdots, x_n)\\
+&= \mathbb{P}(X_1\leq x_1,\cdots, X_n\leq x_n)
+\end{aligned}
+$$
+A random matrix is defined in a similar way.
+
+### Expectation
+The expectation of a random vector and matrix is defined element-wise. That is, 
+$$
+\left(\mathbb{E}[M]\right)_{ij} = \mathbb{E}[M_{ij}]
+$$
+Since $\mathbb{E}$ is a linear operator, it is clear that
+$$
+\mathbb{E}(AX+b) = A\mathbb{E}(X)+b
+$$
+
+### Covariance
+
+The covariane matrix of a random vector $X$ is defined as
+$$
+\Sigma = \mathbb{E}\left[(X-\mathbb{E}X)(X-\mathbb{E}X)^T\right]
+$$
+\begin{quote}
+  \textbf{Q1-1: Show that $\Sigma_{ij} = Cov(X_i,X_j)$}
+\end{quote}
+
+\begin{quote}
+  \textbf{Q1-2: Show that $\Sigma = \mathbb{E}[XX^T] - \mathbb{E}X (\mathbb{E}X)^T$}
+\end{quote}
+
+\begin{quote}
+  \textbf{Q1-3: Write the covariance matrix of $Y=AX+b$}
+\end{quote}
+
+A symmetric matrix $A$ is \textbf{positive semi-definite} if and only if
+$$
+u^T Au \geq 0\quad ^\forall u\in\mathbb{R}^n
+$$
+and \textbf{positive definite} if the inequality is strict. To put it intuitively, it means the angle between any vector $u$ and its linear transformation $Au$ is acute, below 90 degree.
+
+\begin{quote}
+  \textbf{Q1-4: Explain why. Note that $u^T Au = \|u\|_2\|Au\|_2\cos\theta$.}
+\end{quote}
+
+An important property of a covariance matrix is that it is postivie semidefinite.
+
+\begin{quote}
+  \textbf{Q1-5: Explain why. Start from a scalar random variable $k = u^T(X-\mathbb{E}X)$ where $u\in\mathbb{R}^n$ is arbitrary. Obviously $\mathbb{E}k^2\geq0$.}
+\end{quote}
+
+## Using `lmer` to fit a linear mixed effects model
+
+```{r, message=F}
+library(tidyverse)
+library(ggplot2)
+library(cowplot)
+library(datasets)
+library(lme4)
+head(ChickWeight)
+```
+```{r}
+table(ChickWeight$Chick, ChickWeight$Diet)
+```
+
+```{r}
+coplot(weight ~ Time | Chick, data = ChickWeight, type = "l", show.given = F)
+```
+
+
+```{r}
+ChickWeight %>% 
+  ggplot(aes(x = Time, y = weight, group = Chick)) +
+  geom_line(data = transform(ChickWeight, Diet = NULL), color = "grey85") +
+  geom_line(show.legend = F, color="darkblue") +
+  facet_wrap(~ Diet, strip.position = "bottom") +
+  theme_cowplot()
+```
+
+\begin{quote}
+  \textbf{Q2-1: Write down the model formula below, differentiating parameters to be estimated from random variables with distributions.} 
+\end{quote}
+
+
+```{r}
+mod <- lmer(weight ~ Diet + Time + (Time | Chick), data=ChickWeight, REML=F)
+summary(mod)
+```
+
+```{r}
+coef(summary(mod))
+```
+```{r, cache=T}
+confint(mod, method = "boot")
+```
+
+
+```{r}
+VarCorr(mod)
+```
+```{r}
+par(mfrow=c(1,2))
+plot(fitted(mod), resid(mod))
+abline(h=0, lty=2)
+qqnorm(resid(mod))
+qqline(resid(mod))
+```
+
+```{r}
+coplot(fitted(mod) ~ Time | Chick, data = ChickWeight, type = "l", show.given = F)
+coplot(resid(mod) ~ Time | Chick, data = ChickWeight, type = "p", show.given = F)
+```
+
+```{r}
+ChickWeight$pred = fitted(mod)
+ChickWeight %>% 
+  ggplot(aes(x = Time, y = pred, group = Chick)) +
+  geom_line(data = transform(ChickWeight, Diet = NULL, pred = weight), color = "grey85") +
+  geom_line(show.legend = F, color="darkblue") +
+  facet_wrap(~ Diet, strip.position = "bottom") +
+  theme_cowplot()
+```
+
+```{r}
+mod1 <- lmer(weight ~ Diet + poly(Time,3) + (poly(Time,3) | Chick), data=ChickWeight, REML=F)
+par(mfrow=c(1,2))
+plot(fitted(mod), resid(mod), main = paste0("AIC ", signif(AIC(mod),4)))
+abline(h=0, lty=2)
+plot(fitted(mod1), resid(mod1), main = paste0("AIC ", signif(AIC(mod1),4)))
+abline(h=0, lty=2)
+```
+
+\begin{quote}
+  \textbf{Q2-2: Reproduce similar plots for `mod1` to visualize model fits and residuals.} 
+\end{quote}
+
+
+
+
+
+
