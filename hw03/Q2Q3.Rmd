@@ -1,0 +1,100 @@
+---
+title: "Q2Q3"
+author: "Hun Kang"
+date: "2024-09-27"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Q2.
+```{r}
+dat = dget("https://www2.stat.duke.edu/~pdh10/Teaching/610/Homework/nels_math_ses")
+dat$school = as.factor(dat$school)
+str(dat)
+```
+## a.
+```{r}
+mod = lm(mathscore ~ school, data = dat)
+z = abs(mod$res)
+anova(lm(z ~ dat$school))
+```
+## b.
+```{r}
+mod = lm(mathscore ~ school*ses, data = dat)
+z = abs(mod$res)
+anova(lm(z ~ dat$school))
+```
+
+## c. 
+Apparently `ses` explained a portion of variations in the residuals of each group, increasing p-value, favoring the null hypothesis of equal variance. 
+
+# Q3.
+```{r}
+dat = read.table(url("https://www2.stat.duke.edu/~pdh10/Teaching/610/Homework/cd4.dat"),header=TRUE)
+head(dat)
+```
+
+## a.   
+```{r}
+fit0 = lm(cd4 ~ time, data = dat)
+summary(fit0)
+```
+```{r}
+fit1 <- lm(cd4 ~ time * trt, data = dat)
+summary(fit1)
+```
+```{r}
+anova(fit0, fit1)
+```
+The model with `trt` has the fit statistically significantly better than the model without it. In this model, the slope of `time` is different according to `trt` level. However, we need to account for the potential across group heterogeneity.
+
+## b.
+```{r}
+fit2 = lm(cd4 ~ time* factor(pid), data = dat)
+fit2b = lm(cd4 ~ time*factor(pid)+ time*trt, data=dat)
+anova(fit2, fit2b)
+```
+`trt` and `pid` is confounded, that is, observations inside the same group all receive the same `trt` level. Therefore, the design matrix of two models span the column space, yielding the same model fits. For this reason, if we treat individual group effect as fixed effects, we cannot estimate `trt` as a fixed effect.
+
+## c.
+
+Two histograms do not differ a lot it appears, and t-test result is not significant. However, since each OLS estimates is from each group of very small sample size, we cannot expect this test to have enough statistical power.
+```{r, message=F}
+library(tidyverse)
+```
+```{r}
+fits = dat %>% 
+  group_by(pid) %>% 
+  do(model = lm(cd4 ~ time, data=.))
+J = length(fits$pid)
+alphas = betas = trt = numeric(length=J)
+for(j in 1:J){
+  alphas[j] = coef(fits$model[[j]])[1]
+  betas[j] = coef(fits$model[[j]])[2]
+  trt[j] = filter(dat, pid == fits$pid[[j]])[1, "trt"]
+}
+res = na.omit(data.frame(intercept = alphas, slope = betas, trt = trt))
+```
+
+```{r}
+par(mfrow=c(1,2))
+hist(filter(res, trt==1)[,"intercept"], breaks=30, main="Intercept", col="skyblue")
+hist(filter(res, trt==0)[,"intercept"], breaks=30, main="Intercept", col="orange", add= T)
+legend('topleft', c('trt1', 'trt0'), fill=c('skyblue', 'orange'))
+hist(filter(res, trt==1)[,"slope"], breaks=30, main="Slope", col="skyblue")
+hist(filter(res, trt==0)[,"slope"], breaks=30, main="Slope", col="orange", add= T)
+legend('topleft', c('trt1', 'trt0'), fill=c('skyblue', 'orange'))
+```
+
+```{r}
+t.test(intercept ~ trt, data = res)
+t.test(slope ~ trt, data = res)
+```
+
+
+
+

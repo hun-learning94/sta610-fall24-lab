@@ -121,10 +121,10 @@ coef(summary(mod))
 confint(mod, method = "boot")
 ```
 
-
 ```{r}
 VarCorr(mod)
 ```
+
 ```{r}
 par(mfrow=c(1,2))
 plot(fitted(mod), resid(mod))
