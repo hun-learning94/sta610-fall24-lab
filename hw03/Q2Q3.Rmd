@@ -54,7 +54,7 @@ The model with `trt` has the fit statistically significantly better than the mod
 
 ## b.
 ```{r}
-fit2 = lm(cd4 ~ time* factor(pid), data = dat)
+fit2 = lm(cd4 ~ time*factor(pid), data = dat)
 fit2b = lm(cd4 ~ time*factor(pid)+ time*trt, data=dat)
 anova(fit2, fit2b)
 ```
@@ -77,7 +77,7 @@ for(j in 1:J){
   betas[j] = coef(fits$model[[j]])[2]
   trt[j] = filter(dat, pid == fits$pid[[j]])[1, "trt"]
 }
-res = na.omit(data.frame(intercept = alphas, slope = betas, trt = trt))
+res =(data.frame(intercept = alphas, slope = betas, trt = trt))
 ```
 
 ```{r}
