@@ -1,0 +1,120 @@
+---
+title: "STA610 Lab06"
+author: "Yuren Zhou"
+date: "2024-10-04"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\begin{itemize}
+\item
+Write down your answers in any blank sheet and submit your work in paper during the lab.
+\item
+Your work will not be graded. As long as you submit, you will get a full credit.
+\item
+For those who missed the lab today, you can submit it via email to me for half credit.
+\end{itemize}
+
+
+
+
+
+# Conditional Distributions in Linear Mixed Effect model
+
+Consider the linear mixed effect model
+$$
+y_{i, j} = x_{i, j}^\top \beta + z_{i, j}^\top \alpha_j + \epsilon_{i, j}
+$$
+with $\epsilon_{i, j} \stackrel{iid}{\sim} N(0, \Sigma)$ and $\alpha_j \stackrel{iid}{\sim} N(0, \Psi)$ ($\epsilon \perp \alpha$).
+
+Find the following conditional expectations and variances/covariances:
+\begin{itemize}
+\item
+$E[y_{i, j} | x, z, \beta, \Phi, \Sigma]$ and $Cov(y_{i, j}, y_{i', j'} | x, z, \beta, \Phi, \Sigma)$;
+\item
+$E[\beta | z, x, y, \alpha, \Sigma]$ and $V[\beta | z, x, y, \alpha, \Sigma]$;
+\item
+$E[\beta | z, x, y, \Phi, \Sigma]$ and $V[\beta | z, x, y, \Phi, \Sigma]$;
+\item
+$E[\alpha_j | z, x, y, \beta, \Phi, \Sigma]$ and $V[\alpha_j | z, x, y, \beta, \Phi, \Sigma]$.
+\end{itemize}
+Which of the above conditional distributions are normal distributions?
+
+
+
+
+
+# Shrinkage Estimator
+
+Consider the hierarchical model
+$$
+y_{i, j} \stackrel{iid}{\sim} N(\theta_j, \sigma^2)
+,
+$$
+with $j$ indicating the group index and $\theta_j \stackrel{iid}{\sim} N(\mu, \tau^2)$.
+
+Find the conditional distribution of each $\theta_j | y, \mu, \tau^2, \sigma^2$ and let the estimator $\hat\theta_j := E[\theta_j | y, \mu, \tau^2, \sigma^2]$.
+Compare with the sample mean $\bar\theta_j := \frac{1}{n_j} \sum_{i = 1}^{n_j} y_{i, j}$ of each group.
+Which estimator is unbiased? Which has smaller variance? What is the shrinkage weight of $\hat\theta_j$?
+
+
+
+
+
+# Recognize Heterogeneity Effects from Scatter Plots
+
+Consider data $\{(x_{i, j}, y_{i, j})\}$ with $j \in \{1, 2, 3\}$ indicating the group index.
+State the correct linear fixed effects model for each scatter plot of $y \sim x$.
+
+```{r}
+library(ggplot2)
+library(lme4)
+```
+
+```{r, echo = F}
+set.seed(0)
+n <- 90
+group <- factor(rep(1:3, each = n / 3))
+x <- rnorm(n) * 3
+eps <- rnorm(n)
+shared_intercept <- 0
+shared_slope <- 1
+group_intercept <- c(-3, 0, 3)
+group_slope <- c(-1, 0, 1)
+```
+
+```{r, echo = F, fig.width = 5, fig.height = 4}
+y <- shared_intercept + shared_slope * x + eps
+df <- data.frame(group, x, y)
+ggplot(df, aes(x = x, y = y, color = group)) +
+  geom_point()
+```
+
+```{r, echo = F, fig.width = 5, fig.height = 4}
+y <- (shared_intercept + group_intercept[group]) + shared_slope * x + eps
+df <- data.frame(group, x, y)
+ggplot(df, aes(x = x, y = y, color = group)) +
+  geom_point()
+```
+
+```{r, echo = F, fig.width = 5, fig.height = 4}
+y <- shared_intercept + (shared_slope + group_slope[group]) * x + eps
+df <- data.frame(group, x, y)
+ggplot(df, aes(x = x, y = y, color = group)) +
+  geom_point()
+```
+
+```{r, echo = F, fig.width = 5, fig.height = 4}
+y <- (shared_intercept + group_intercept[group]) + (shared_slope + group_slope[group]) * x + eps
+df <- data.frame(group, x, y)
+ggplot(df, aes(x = x, y = y, color = group)) +
+  geom_point()
+```
+
+
