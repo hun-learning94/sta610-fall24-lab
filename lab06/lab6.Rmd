@@ -31,18 +31,19 @@ Consider the linear mixed effect model
 $$
 y_{i, j} = x_{i, j}^\top \beta + z_{i, j}^\top \alpha_j + \epsilon_{i, j}
 $$
-with $\epsilon_{i, j} \stackrel{iid}{\sim} N(0, \Sigma)$ and $\alpha_j \stackrel{iid}{\sim} N(0, \Psi)$ ($\epsilon \perp \alpha$).
+with $\epsilon_{i, j} \stackrel{iid}{\sim} N(0, \sigma^2)$ and $\alpha_j \stackrel{iid}{\sim} N(0, \Phi)$ ($\epsilon \perp \alpha$).
+We consider putting a prior distribution on $\beta$ as $\beta \sim N(0, I)$.
 
 Find the following conditional expectations and variances/covariances:
 \begin{itemize}
 \item
-$E[y_{i, j} | x, z, \beta, \Phi, \Sigma]$ and $Cov(y_{i, j}, y_{i', j'} | x, z, \beta, \Phi, \Sigma)$;
+$E[y_{i, j} | x, z, \beta, \Phi, \sigma^2]$ and $Cov(y_{i, j}, y_{i', j'} | x, z, \beta, \Phi, \sigma^2)$;
 \item
-$E[\beta | z, x, y, \alpha, \Sigma]$ and $V[\beta | z, x, y, \alpha, \Sigma]$;
+$E[\beta | z, x, y, \alpha, \sigma^2]$ and $V[\beta | z, x, y, \alpha, \sigma^2]$;
 \item
-$E[\beta | z, x, y, \Phi, \Sigma]$ and $V[\beta | z, x, y, \Phi, \Sigma]$;
+$E[\beta | z, x, y, \Phi, \sigma^2]$ and $V[\beta | z, x, y, \Phi, \sigma^2]$;
 \item
-$E[\alpha_j | z, x, y, \beta, \Phi, \Sigma]$ and $V[\alpha_j | z, x, y, \beta, \Phi, \Sigma]$.
+$E[\alpha_j | z, x, y, \beta, \Phi, \sigma^2]$ and $V[\alpha_j | z, x, y, \beta, \Phi, \sigma^2]$.
 \end{itemize}
 Which of the above conditional distributions are normal distributions?
 
