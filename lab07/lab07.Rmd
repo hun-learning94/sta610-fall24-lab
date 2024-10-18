@@ -1,0 +1,37 @@
+---
+title: "STA610 Lab07"
+author: Hun Kang
+output: pdf_document
+date: "2024-10-18"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\begin{itemize}
+\item Write down your answers in any blank sheet and submit your work in paper during the lab.
+\item Your work will not be graded. As long as you submit, you will get a full credit. 
+\item For those who missed the lab today, you can submit it via email to me for half credit.
+\end{itemize}
+
+
+```{r, message=F}
+library(datasets)
+library(lme4)
+head(ChickWeight)
+```
+
+\begin{quote}
+  \textbf{Q1: Write and fit the model to test the effect of `Diet` on the response `weight` after accounting for `Time`. How would you reflect group variation in the model?}
+\end{quote}
+
+\begin{quote}
+  \textbf{Q2: Test the effect of `Diet` on each of three model you fitted in Q1. Get the log likelihood yourself and verify the number matches the result of `anova` and `drop1`.}
+\end{quote}
+
+\begin{quote}
+  \textbf{Q3: Using the three nested models in Q1, test the random intercept and slope. What is the null distribution?}
+\end{quote}
+
+
