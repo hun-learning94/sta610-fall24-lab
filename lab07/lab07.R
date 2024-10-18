@@ -70,8 +70,19 @@ lambda = c(2*(ll2 - ll1))
 0.5*(1 - pchisq(lambda, 1)) + 0.5*(1 - pchisq(lambda, 2))
 
 
-
-
+# Q4. Calculate BIC:
+BIC_ = function(mod, N){
+  ll = logLik(mod)
+  p = attr(ll, "df")
+  p * log(N) - 2*c(ll)
+}
+N = nrow(ChickWeight)
+BIC(mod0)
+BIC_(mod0, N)
+BIC(mod1)
+BIC_(mod1, N)
+BIC(mod2)
+BIC_(mod2, N)
 
 
 
