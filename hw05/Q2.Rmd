@@ -1,7 +1,25 @@
+---
+title: "Q2"
+author: "Hun Kang"
+date: "2024-10-27"
+output: pdf_document
+geometry: margin=1.5cm
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width=10, fig.height=7) 
+```
+
+
+# Q2.
+```{r, message=F}
 library(lme4)
+```
+
+```{r}
 dat = dget("https://www2.stat.duke.edu/~pdh10/Teaching/610/Homework/Earthquake")
 head(dat)
-
 # response: accel
 # group: Quake
 # micro level: distance, soil -> fixed and random
@@ -9,21 +27,31 @@ table(dat$soil, dat$Quake)
 boxplot(distance ~ Quake, dat=dat)
 # macro level: Richter -> fixed only
 plot(as.numeric(dat$Quake)+rnorm(nrow(dat),sd=0.1), dat$Richter)
+```
 
-## a
+## a.
+The estimated random slope standard deviations are small relative to that of the residual, which possibly incurred convergence failure of the model fit. Also, the variance of the fitted residual appears to increase for larger fitted values, which suggests some variance-stabilizing transformation of the variables are needed.
+```{r}
 mod = lmer(accel ~ distance + soil +Richter +  (1+ soil + distance|Quake),
            dat = dat, REML=F)
 summary(mod)
 plot(mod)
 qqnorm(residuals(mod)); qqline(residuals(mod))
+```
 
-## b
+## b. 
+Before transformation, the relationship does not look linear. After log transformation of accel and/or distance, it becomes closer to linear.
+```{r}
 coplot(accel ~ distance | as.factor(Quake), data = dat, show.given=F)
 coplot(accel ~ log(distance) | as.factor(Quake), data = dat, show.given=F)
 coplot(log(accel) ~ distance | as.factor(Quake), data = dat, show.given=F)
 coplot(log(accel) ~ log(distance) | as.factor(Quake), data = dat, show.given=F)
+```
 
-## c
+
+## c.
+The residuals look closer to normality.
+```{r}
 dat$taccel = log(dat$accel)
 dat$tdist = log(dat$distance)
 mod1 = lmer(taccel ~ tdist + soil +Richter +  (1+ soil + tdist|Quake),
@@ -31,8 +59,12 @@ mod1 = lmer(taccel ~ tdist + soil +Richter +  (1+ soil + tdist|Quake),
 summary(mod1)
 plot(mod1)
 qqnorm(residuals(mod1)); qqline(residuals(mod1))
+```
 
-## d
+
+## d.
+We compare the full model in a. against two submodels, 1) without random slope tdist 2) without random slope soil. Since the full model has 3 random effects and the submodel has 2, the null distribution is a equal weight mixture of chisq(df=3) and chisq(df=2). According to LRT, the random slope tdist is significant but soil is not. BIC comparison leads to similar conclusion. Furthermore, starting from the full model in a., the LRTs for fixed effects by dropping one variable each time suggest that all except soil fixed effect are significant.
+```{r}
 mod_full = lmer(taccel ~ tdist + soil +Richter +  (1+ soil + tdist|Quake), dat = dat, REML=F)
 mod_nosoil = lmer(taccel ~ tdist + soil +Richter +  (1+ tdist|Quake), dat = dat, REML=F)
 mod_notdist = lmer(taccel ~ tdist + soil +Richter +  (1+ soil|Quake), dat = dat, REML=F)
@@ -44,16 +76,33 @@ lambda = c(2*(logLik(mod_full) - logLik(mod_notdist)))
 0.5*(1 - pchisq(lambda, 3)) + 0.5*(1 - pchisq(lambda, 2))
 
 BIC(mod_full)
-BIC(mod_nosoil)
-BIC(mod_notdist)
+BIC(mod_nosoil) # BIC decreases (better model)
+BIC(mod_notdist) # BIC increases (worse model)
 
 mod_notdist = lmer(taccel ~ soil +Richter +  (1+ soil + tdist|Quake), 
                    dat = dat, REML=F)
-anova(mod_full, mod_notdist)
+anova(mod_notdist, mod_full)
 mod_nosoil = lmer(taccel ~ tdist +Richter +  (1+ soil + tdist|Quake), 
                    dat = dat, REML=F)
-anova(mod_full, mod_nosoil)
+anova(mod_nosoil, mod_full)
 mod_noRich = lmer(taccel ~ tdist + soil + (1+ soil + tdist|Quake), 
                   dat = dat, REML=F)
-anova(mod_full, mod_noRich)
+anova(mod_noRich, mod_full)
+```
+## e. 
+Summarize your answers leading upto a-d, and interpret the fixed effects coefficients estimates coherently. For example, for a unit change of tdist (multiplicative increase by e in the original scale), the log accel decreases by -1.13725.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
