@@ -1,0 +1,72 @@
+---
+title: "STA610 Lab08"
+author: "Yuren Zhou"
+date: "2024-10-25"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\begin{itemize}
+\item
+Write down your answers in any blank sheet and submit your work in paper during the lab.
+\item
+Your work will not be graded. As long as you submit, you will get a full credit.
+\item
+For those who missed the lab today, you can submit it via email to me for half credit.
+\end{itemize}
+
+
+
+
+
+# Conditional Expectation and Variances in Nested Models
+
+Consider the following nested model:
+$$
+y_{i, j, k, \ell}
+=
+\mu + a_i + b_{i, j} + c_{i, k} + d_{i, j, k} + \epsilon_{i, j, k, \ell}
+,
+$$
+where
+$$
+a_i \stackrel{iid}{\sim} N(0, \tau_a^2)
+,
+$$
+$$
+b_{i, j} \stackrel{iid}{\sim} N(0, \tau_b^2)
+,
+$$
+$$
+c_{i, k} \stackrel{iid}{\sim} N(0, \tau_c^2)
+,
+$$
+$$
+d_{i, j, k} \stackrel{iid}{\sim} N(0, \tau_d^2)
+,$$
+$$
+\epsilon_{i, j, k, \ell} \stackrel{iid}{\sim} N(0, \sigma^2)
+.
+$$
+\begin{enumerate}
+\item
+Describe/Design an application setting for this model.
+\item
+Find the expectation $E[y_{i, j, k, \ell}]$ and discuss the cases for $Cov(y_{i, j, k, \ell}, y_{i', j', k', \ell'})$
+\item
+Find the conditional expectations $E[y_{i, j, k, \ell} | a]$, $E[y_{i, j, k, \ell} | a, b]$ and conditional covariances $Cov(y_{i, j, k, \ell}, y_{i', j', k', \ell'} | a)$, $Cov(y_{i, j, k, \ell}, y_{i', j', k', \ell'} | a, b)$, $Cov(y_{i, j, k, \ell}, y_{i', j', k', \ell'} | a, b, c)$.
+\end{enumerate}
+
+
+
+# Comments from Office Hours
+
+After fitting linear models in R, some coefficients are missing from the model summary. What is the typical reason of this?
+
+
