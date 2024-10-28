@@ -1,0 +1,75 @@
+---
+title: "STA610 Lab07"
+author: Hun Kang
+output: pdf_document
+date: "2024-10-18"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\begin{itemize}
+\item Write down your answers in any blank sheet and submit your work in paper during the lab.
+\item Your work will not be graded. As long as you submit, you will get a full credit. 
+\item For those who missed the lab today, you can submit it via email to me for half credit.
+\end{itemize}
+
+
+```{r, message=F}
+library(datasets)
+library(lme4)
+head(ChickWeight)
+```
+
+\begin{quote}
+  \textbf{Q1: Write and fit the model to test the effect of `Diet` on the response `weight` after accounting for `Time`. How would you reflect group variation in the model?}
+\end{quote}
+
+\begin{quote}
+  \textbf{Q2: Test the effect of `Diet` on each of three model you fitted in Q1. Get the log likelihood yourself and verify the number matches the result of `anova` and `drop1`.}
+\end{quote}
+
+\begin{quote}
+  \textbf{Q3: Using the three nested models in Q1, test the random intercept and slope. What is the null distribution?}
+\end{quote}
+
+
+
+
+```{r}
+mod0 = lm(weight ~ Diet+Time, data = ChickWeight, REML=F)
+summary(mod0)
+mod1 = lmer(weight ~ Diet+Time + (1 | Chick), data = ChickWeight, REML=F)
+summary(mod1)
+mod2 = lmer(weight ~ Diet+Time + (1+Time | Chick), data = ChickWeight, REML=F)
+summary(mod2)
+```
+```{r}
+drop1(mod0, test="F")
+drop1(mod1, test="Chisq")
+drop1(mod2, test="Chisq")
+```
+
+```{r}
+mod1_sub = lmer(weight ~ Time + (1 | Chick), data = ChickWeight, REML=F)
+anova(mod1_sub, mod1)
+
+(lambda = 2*(logLik(mod1) - logLik(mod1_sub)))
+(d = attr(logLik(mod1), "df") - attr(logLik(mod1_sub), "df"))
+(1 - pchisq(c(lambda), d))
+```
+
+
+
+```{r}
+(lambda = 2*(logLik(mod1) - logLik(mod0)))
+0.5*(1 - pchisq(c(lambda), 1))
+```
+
+```{r}
+(lambda = 2*(logLik(mod2) - logLik(mod1)))
+0.5*(1 - pchisq(c(lambda),1) + 1 - pchisq(c(lambda), 2) )
+```
+
+
