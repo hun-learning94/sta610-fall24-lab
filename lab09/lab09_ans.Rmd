@@ -1,0 +1,118 @@
+---
+title: "STA610 Lab09"
+author: Hun Kang
+output: pdf_document
+date: "2024-11-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\begin{itemize}
+\item Write down your answers in any blank sheet and submit your work in paper during the lab.
+\item Your work will not be graded. As long as you submit, you will get a full credit. 
+\item For those who missed the lab today, you can submit it via email to me for half credit.
+\end{itemize}
+
+## Logistic Regression with Random Intercept
+```{r message=F}
+library(lme4)
+library(arm) # for binned residuals
+library(tidyverse)
+library(broom)
+```
+
+
+```{r}
+dat = read.csv("basketball0910.csv") %>% select(game, hometeam, visitor, foul.home, foul.diff)
+head(dat)
+```
+
+- `game` unique game identifier number
+- `hometeam` home team abbreviation
+- `visitor` visiting team abbreviation
+- `foul.home` indicator if foul was called on the home team
+- `foul.diff` the difference in fouls before the current foul was called (home - visitor)
+
+
+\begin{quote}
+  \textbf{Q1: Draw a plot that can visualize a relationship between `foul.home` and `foul.diff`.}
+\end{quote}
+
+```{r}
+tmp = dat %>% 
+  group_by(foul.diff) %>% 
+  summarize(phat = mean(foul.home)) %>% 
+  mutate(lodd = log(phat/(1-phat)))
+plot(tmp$foul.diff, tmp$lodd)
+```
+
+\begin{quote}
+  \textbf{Q2: Write the formula of the logistic regression model with `foul.diff` as the only predictor and fit it for each `game`. Plot the resulting intercepts and slopes in scatter plot.}
+\end{quote}
+
+$$
+\begin{aligned}
+Y_{ij} &\sim Ber(p_{ij})\\
+p_{ij} &= P(y_{ij}=1\mid X_{ij})\\
+\log \frac{p_{ij}}{1 - p_{ij}} &= 
+(\alpha+ a_j) + (\beta+b_{j})x_{ij}\\
+\begin{pmatrix}
+a_j \\ b_j
+\end{pmatrix} &\sim
+N\left[
+\begin{pmatrix}
+0 \\ 0
+\end{pmatrix},
+\begin{pmatrix}
+\tau_a^2 & \tau_{ab}\\ 
+\tau_{ab} & \tau_b^2
+\end{pmatrix}
+\right]
+\end{aligned}
+$$
+
+
+```{r}
+games = aggregate(foul.home ~ game, data =dat, length)
+games = games[games$foul.home > 16, ]
+alphas = betas = numeric(nrow(games))
+for(i in 1:nrow(games)){
+  mod = glm(foul.home ~ foul.diff, data = dat[dat$game == games[i, "game"], ], family="binomial")
+  alphas[i] = coefficients(mod)[1]
+  betas[i] = coefficients(mod)[2]
+}
+plot(alphas, betas)
+```
+
+
+
+\begin{quote}
+  \textbf{Q3: Expand the model in Q2 with random intercept and slope with a grouping factor `game`.}
+\end{quote}
+
+```{r}
+mod = glmer(foul.home ~ foul.diff + (foul.diff|game), 
+            family = binomial, 
+            data = dat)
+summary(mod)
+```
+
+```{r}
+lattice::dotplot(ranef(mod, which = "game", condVar = TRUE), scales = list(y = list(alternating = 0)))
+```
+
+
+\begin{quote}
+  \textbf{Q4: Do you think the random slope is statistically significant? How can we test it?}
+\end{quote}
+
+```{r}
+library(pbkrtest)
+mod_sub = glmer(foul.home ~ foul.diff + (1|game), family = binomial, data = dat)
+PBmodcomp(mod, mod_sub, nsim=50, cl=1)
+```
+
+
+
