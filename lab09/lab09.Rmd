@@ -1,0 +1,58 @@
+---
+title: "STA610 Lab09"
+author: Hun Kang
+output: pdf_document
+date: "2024-11-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\begin{itemize}
+\item Write down your answers in any blank sheet and submit your work in paper during the lab.
+\item Your work will not be graded. As long as you submit, you will get a full credit. 
+\item For those who missed the lab today, you can submit it via email to me for half credit.
+\end{itemize}
+
+## Logistic Regression with Random Intercept
+```{r message=F}
+library(lme4)
+library(tidyverse)
+```
+
+
+```{r}
+dat = read.csv("basketball0910.csv") %>% select(game, hometeam, visitor, foul.home, foul.diff)
+head(dat)
+```
+
+- `game` unique game identifier number
+- `hometeam` home team abbreviation
+- `visitor` visiting team abbreviation
+- `foul.home` indicator if foul was called on the home team
+- `foul.diff` the difference in fouls before the current foul was called (home - visitor)
+
+
+\begin{quote}
+  \textbf{Q1: Draw a plot that can visualize a relationship between `foul.home` and `foul.diff`.}
+\end{quote}
+
+
+\begin{quote}
+  \textbf{Q2: Write the formula of the logistic regression model with `foul.diff` as the only predictor and fit it for each `game`. Plot the resulting intercepts and slopes in scatter plot.}
+\end{quote}
+
+
+\begin{quote}
+  \textbf{Q3: Expand the model in Q2 to with random intercept and slope with a grouping factor `game`.}
+\end{quote}
+
+
+\begin{quote}
+  \textbf{Q4: Do you think the random slope is statistically significant? How can we test it?}
+\end{quote}
+
+
+
+
