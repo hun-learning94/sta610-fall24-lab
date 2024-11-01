@@ -100,7 +100,7 @@ for(i in 1:nsim){
 
 ```{r}
 hist(Chisq_vals, breaks=30, freq=F)
-x = seq(0, 9, len=200)
+x = seq(0, 9, len=1e3)
 y = dchisq(x, 2)
 abline(v = Chisq_obs)
 lines(x, y, col=2)
