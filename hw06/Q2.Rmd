@@ -1,0 +1,123 @@
+---
+title: "Q2"
+author: "Hun Kang"
+date: "2024-10-27"
+output: pdf_document
+geometry: margin=1.5cm
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width=10, fig.height=7) 
+```
+
+
+# Q2.
+```{r, message=F}
+library(lme4)
+library(tidyverse)
+```
+
+```{r}
+dat = read.table("fung.dat",header=TRUE)
+head(dat)
+```
+
+## a.
+```{r}
+par(mfrow=c(2,2))
+boxplot(logfung ~ dose, data = dat)
+boxplot(logfung ~ variety, data = dat)
+boxplot(logfung ~ dose*variety, data = dat)
+boxplot(logfung ~ plot, data = dat)
+```
+
+## b.
+In linear regression, **normality** can be checked by QQ plot, and **(equal) variance** and **independence** assumptions can be typically checked by drawing residuals against some structure in the data, e.g. time or group. If these assumptions are met, the boxplots of residuals per plot should be centered around zero with similar spread. In this data, some plots have higher residuals than others or higher variance (box width). This indicate that there is a pattern in the residuals related to the grouping factor, violating the assumptions.
+
+The p-value of dose is 0.007697, but keep in mind that the model here assumes we have 36 of iid samples. However, as we will see below, if the iid assumption on the error is questionable, than the effective number of iid samples would be smaller. In this aspect we can suspect this p-value is underestimated.
+```{r}
+## fit the full model
+mod = lm(logfung ~ as.factor(dose) + as.factor(variety), data=dat) # no plot effect
+summary(mod)
+anova(mod)
+```
+
+```{r}
+par(mfrow=c(1,3))
+plot(mod, which=c(1,2))
+boxplot(resid(mod) ~ plot, data = dat)
+```
+
+
+
+## c.
+We take mean of each plot, summarizing 36 obs across 9 plots into 9 obs, discarding variety. Therefore the residual variance is the plot to plot variation. Since we are using less data than in the sample, the test will have less power (the probability to reject the null hypothesis if the effect size actually exists), which explains one of why the p-value here is larger than b.
+```{r}
+datc = dat %>% group_by(plot) %>% summarize(logfung = mean(logfung), dose = first(dose))
+datc
+```
+```{r}
+mod = lm(logfung ~ as.factor(dose), data = datc)
+summary(mod)
+anova(mod)
+```
+
+## d
+After including the plot random intercept, the reisuals per group appear better than b. The p-value here is based on the asymptotic distribution of the likelihood ratio test statistics, which is Chi-squared. This is the distribution of the test statistics we would see if take all the predictors (dose, variety and plot), $X$ as given, and obtain imaginary samples of the logfung, $y$, under the null hypothesis that the regression coefficients of dose dummy variables are zero. The p-value here is larger than b without considering plot and smaller than c which only uses 9 summarized data.
+```{r}
+mod = lmer(logfung ~ as.factor(dose) + as.factor(variety) + (1|plot), data = dat, REML=F)
+summary(mod)
+```
+```{r}
+par(mfrow=c(1,3))
+plot(fitted(mod), resid(mod)); abline(h=0)
+qqnorm(resid(mod)); qqline(resid(mod))
+boxplot(resid(mod) ~ plot, data = dat)
+```
+
+```{r}
+mod_nodose = lmer(logfung ~ as.factor(variety) + (1|plot), data = dat, REML=F)
+(res = anova(mod, mod_nodose))
+(Chisq_obs = res$Chisq[2])
+```
+
+## e.
+Unlike in d where we fix $X$ and sample $y$ under the null hypothesis, here in the randomized test, we fix $y$ and sample $X$ under the null hypothesis. If the dose indeed has no effect at all, then even if we change the dose assignment, it will not change the response $y$. By randomly assigning dose to each plot and computing the LRT test statistic, we can obtain another null distribution of the test statistics. The difference is that in d, the randomness of the null distribution comes from $y$: another set of logfung we would observe under the same dose allocation if the dose had no effect, whereas in e, the randomness comes from randomly assigning dose allocation, $X$. These two are different approaches in obtaining a null distribution of the test statistics, and has no reason to be equal at all. The p-value here is about $0.3$.
+```{r}
+nsim = 5000
+datsim = dat
+Chisq_vals = numeric(nsim)
+for(i in 1:nsim){
+  if(i %% 500 == 0) print(i)
+  datsim$dose = rep(sample(rep(1:3, 3)), each = 4)
+  mod = lmer(logfung ~ as.factor(dose) + as.factor(variety) + (1|plot), data = datsim, REML=F)
+  mod_nodose = lmer(logfung ~ as.factor(variety) + (1|plot), data = datsim, REML=F)
+  res = anova(mod, mod_nodose)
+  Chisq_vals[i] = res$Chisq[2]
+}
+```
+
+```{r}
+hist(Chisq_vals, breaks=30, freq=F)
+x = seq(0, 9, len=200)
+y = dchisq(x, 2)
+abline(v = Chisq_obs)
+lines(x, y, col=2)
+```
+
+
+```{r}
+mean(Chisq_vals > Chisq_obs)
+```
+
+
+
+
+
+
+
+
+
+
+
