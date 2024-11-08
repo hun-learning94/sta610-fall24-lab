@@ -1,0 +1,159 @@
+---
+title: "STA610 Lab10"
+author: "Yuren Zhou"
+date: "2024-11-08"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\begin{itemize}
+\item
+Write down your answers in any blank sheet and submit your work in paper during the lab.
+\item
+Your work will not be graded. As long as you submit, you will get a full credit.
+\item
+For those who missed the lab today, you can submit it via email to me for half credit.
+\end{itemize}
+
+
+
+
+
+# Linear Algebra Stuffs
+
+Consider matrices $A \in \mathbb{R}^{n \times n}$, $U \in \mathbb{R}^{n \times k}$, $C \in \mathbb{R}^{k \times k}$, $V \in \mathbb{R}^{k \times n}$ ($k \le n$) with $A$ and $C$ invertible.
+Sherman–Morrison–Woodbury formula (\url{https://en.wikipedia.org/wiki/Woodbury_matrix_identity}) gives
+$$
+(A + U C V)^{-1}
+=
+A^{-1} - A^{-1} U (C^{-1} + V A^{-1} U)^{-1} V A^{-1}
+.
+$$
+\begin{enumerate}
+\item
+Verify the formula by computing the following:
+$$
+(A + U C V) (A^{-1} - A^{-1} U (C^{-1} + V A^{-1} U)^{-1} V A^{-1})
+.
+$$
+\item
+Use the formula to simplify the following $n \times n$ matrix:
+$$
+(I - a 1 1^\top)^{-1}
+.
+$$
+\item
+For a matrix $A$ with $||A||_2 < 1$ (i.e. all eigenvalues of $A$ are between -1 and 1), we have power series
+$$
+(I - A)^{-1}
+=
+I + A + A^2 + \cdots
+=
+\sum_{\ell = 0}^\infty A^\ell
+.
+$$
+Now use this formula to simplify $(I - a 1 1^\top)^{-1}$ when $-\frac{1}{n} < a < \frac{1}{n}$.
+Do you get the same result as in part 2?
+\end{enumerate}
+
+
+
+
+Consider an invertible matrix $A$ and vectors $u, v$.
+The matrix determinant lemma gives
+$$
+\det(A + u v^\top)
+=
+(1 + v^\top A^{-1} u) \det(A)
+.
+$$
+\begin{enumerate}
+\item
+Prove this lemma.
+Hint: check out \url{https://en.wikipedia.org/wiki/Matrix_determinant_lemma}.
+\item
+Compute the determinant
+$$
+\det(I - a 11^\top)
+.
+$$
+\end{enumerate}
+
+
+
+
+
+# \textsf{nlme} package
+
+Load package.
+```{r}
+library(nlme)
+```
+
+Data simulation.
+```{r}
+set.seed(0)
+
+N <- 10
+TT <- 30
+subject <- as.factor(rep(1:N, each = TT))
+time <- rep(1:TT, N)
+
+intercept <- rnorm(N, 10, 10)
+slope <- rnorm(N, 1, 1)
+
+whitenoise <- rnorm(N * TT, 0, 10)
+phi <- 0.9
+ar_noise <- rep(0, N * TT)
+for (n in 1:N){
+  for (t in 1:TT){
+    i <- (n - 1) * TT + t
+    if (t == 1) ar_noise[i] <- whitenoise[i] / (1 - phi ^ 2)
+    else ar_noise[i] <- whitenoise[i] + phi * ar_noise[i - 1]
+  }
+}
+
+y <- intercept[subject] + slope[subject] * time + ar_noise
+
+data <- data.frame(subject = subject, time = time, y = y)
+```
+
+Plot data.
+```{r}
+library(ggplot2)
+ggplot(data, aes(x = time, y = y, color = subject, group = subject)) +
+  geom_line() +
+  geom_point(alpha = 0.6) +
+  labs(title = "Sim Data", x = "time", y = "y") +
+  theme_minimal()
+```
+
+\begin{enumerate}
+\item
+Fit the model with a fixed effect of time, random intercepts and slopes for each subject, and independent noise.
+\item
+Fit the model with a fixed effect of time, random intercepts and slopes for each subject, and autocorrelated noise.
+\item
+Report the BIC for both models. Which model would you choose?
+\end{enumerate}
+
+
+```{r, results = "hide"}
+model1 <- lme(y ~ time, random = ~ 1 + time | subject,
+              data = data, method = "ML")
+
+BIC(model1)
+```
+
+```{r, results = "hide"}
+model2 <- lme(y ~ time, random = ~ 1 + time | subject,
+              correlation = corAR1(), data = data, method = "ML")
+
+BIC(model2)
+```
