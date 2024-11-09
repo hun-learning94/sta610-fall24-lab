@@ -1,7 +1,7 @@
 ---
 title: "STA610 Homework 7"
-author: "Yuren Zhou"
-date: "2024-11-08"
+author: "Hun Kang, Yuren Zhou"
+date: "2024-11-09"
 output:
   pdf_document: default
   html_document:
@@ -11,6 +11,29 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+# Question 1
+
+## a.
+$$
+V(\mu_{ij}) = \tau_a^2 + \tau_b^2 + \sigma^2
+$$
+
+## b.
+$$
+\begin{aligned}
+Cov(y_{ij}, y_{i,j'}\mid \mu) &= \tau_a^2\\
+Cov(y_{ij}, y_{i',j}\mid \mu) &= \tau_b^2\\
+Cov(y_{ij}, y_{i',j'}\mid \mu) &= 0
+\end{aligned}
+$$
+
+## c.
+$$
+\begin{aligned}
+V(\bar y\mid \mu, \tau_a^2, \tau_b^2) = \tau_a^2/m_1 + \tau_b^2/m_2 + \sigma^2/(m_1m_2)
+\end{aligned}
+$$
 
 # Question 2
 
