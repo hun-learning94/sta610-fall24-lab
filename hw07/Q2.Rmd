@@ -1,0 +1,157 @@
+---
+title: "STA610 Homework 7"
+author: "Yuren Zhou"
+date: "2024-11-08"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Question 2
+
+```{r}
+library(ggplot2)
+library(lme4)
+```
+
+```{r}
+load("pine.Rdata")
+data <- data.frame(
+  y = c(Y),
+  x1 = c(X[, , 1]),
+  x2 = c(X[, , 2]),
+  year = as.factor(rep(1:10, each = 24)),
+  plot = as.factor(rep(1:24, 10))
+)
+```
+
+## (a)
+
+(2 points)
+
+```{r, fig.width = 4, fig.height = 3, fig.align = 'center'}
+ggplot(data, aes(x = x1, y = y)) +
+  geom_point() +
+  labs(title = "y ~ x1", x = "x1", y = "y")
+```
+
+There appears to be a positive relation between $x_1$ and $y$.
+
+```{r, fig.width = 4, fig.height = 3, fig.align = 'center'}
+ggplot(data, aes(x = x2, y = y)) +
+  geom_point() +
+  labs(title = "y ~ x2", x = "x2", y = "y")
+```
+
+There appears to be a positive relation between $x_2$ and $y$.
+
+```{r, fig.width = 4, fig.height = 3, fig.align = 'center'}
+ggplot(data, aes(x = plot, y = y)) +
+  geom_boxplot() +
+  labs(title = "y ~ plot", x = "plot", y = "y")
+```
+
+$y$ differs dramatically across plots, e.g. plots 4 and 11 have much larger $y$.
+
+```{r, fig.width = 4, fig.height = 3, fig.align = 'center'}
+ggplot(data, aes(x = year, y = y)) +
+  geom_boxplot() +
+  labs(title = "y ~ year", x = "year", y = "y")
+```
+
+$y$ is similar across years, with a slight descending trend.
+
+## (b)
+
+(2 points)
+
+```{r}
+model_b <- lm(log(y) ~ log(x1) + log(x2), data = data)
+summary(model_b)
+```
+
+```{r, fig.width = 4, fig.height = 3, fig.align = 'center'}
+qqnorm(residuals(model_b))
+qqline(residuals(model_b))
+```
+
+Normality of error assumption is roughly satisfied.
+
+```{r, fig.width = 4, fig.height = 3, fig.align = 'center'}
+plot(fitted(model_b), residuals(model_b), main = "Residuals vs Fitted", xlab = "Fitted Values", ylab = "Residuals")
+abline(h = 0, col = "red")
+```
+
+Constant variance assumption is roughly satisfied.
+
+```{r}
+library(lmtest)
+dwtest(model_b)
+```
+Durbin-Watson test has an insignificant p-value, suggesting that the independence error assumption is roughly satisfied.
+Alternatively, this can also be argued from scatter plots of residuals vs. fitted values, years, plots, etc.
+
+## (c)
+
+(2 points)
+
+```{r}
+model_c <- glm(y ~ log(x1) + log(x2), family = poisson, data = data)
+```
+
+```{r}
+summary(model_b)
+summary(model_c)
+```
+
+The estimated coefficients of both models are roughly similar, i.e. their differences within one standard deviation.
+The estimated standard errors are also similar.
+
+## (d)
+
+(2 points)
+
+```{r}
+anova_plot <- aov(residual ~ plot,
+                  data = data.frame(plot = data$plot, residual = residuals(model_c)))
+summary(anova_plot)
+```
+
+```{r}
+anova_year <- aov(residual ~ year,
+                  data = data.frame(year = data$year, residual = residuals(model_c)))
+summary(anova_year)
+```
+
+ANOVA suggest that observations (or equivalently, residuals) are not independent within plots or within years.
+Alternatively, this can also be observed from scatter plots of residuals by plots and by years.
+
+## (e)
+
+(2 points)
+
+```{r}
+model_e <- glmer(y ~ log(x1) + log(x2) + (1 | plot) + (1 | year), family = poisson, data = data)
+summary(model_e)
+```
+
+The estimated coefficient of $\log(x_1)$ gets smaller, and the estimated coefficient of $\log(x_2)$ is roughly similar.
+The estimated coefficient standard errors are larger.
+The positive effect of $\log(x_2)$ is very significant, whereas the positive effect of $\log(x_1)$ becomes borderline significant after accounting for plot and year random effects.
+
+## (f)
+
+(2 points)
+
+```{r}
+BIC(model_c)
+BIC(model_e)
+```
+
+The model in (e) with random effects of plots and years has smaller BIC compared to the model in (c), suggesting there is significant within-plot and within-year dependence.
+Further comparison to the model with only random effects of plots and to the model with only random effects of years could yield further evidence.
